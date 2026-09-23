@@ -9,21 +9,51 @@ from .models import AnalysisResult, ExtractedDocument, Finding, FunctionRecord
 UNIT_RE = re.compile(r"(?:управлени[ея]|департамент[а-я]*|отдел[а-я]*|служб[а-я]*|центр[а-я]*|дирекци[яи])\s+(?:по\s+)?[А-ЯЁA-Z0-9][\wЁёА-Яа-я -]{1,55}?(?=\s+(?:обеспеч|организ|осуществ|координир|контрол|разработ|ведени|проведени|формирован|управлен|анализ|подготов|сопровожд|мониторинг|отвечает|выполняет)|[,;:.()|]|$)", re.I)
 FUNCTION_MARKERS = ("обеспеч", "организует", "организовывает", "осуществ", "координир", "контрол", "разработ", "ведени", "проведени", "формирован", "управлен", "анализ", "подготов", "сопровожд", "мониторинг", "отвечает за", "функци")
 
-
-def _records(docs: list[ExtractedDocument]) -> tuple[list[str], list[FunctionRecord]]:
+def _records(
+    docs: list[ExtractedDocument],
+) -> tuple[list[str], list[FunctionRecord]]:
     units: list[str] = []
     records: list[FunctionRecord] = []
+
     for doc in docs:
-        current_unit = "Подразделение не определено в фрагменте"
+        current_unit = "Подразделение не определено в документе"
+
         for segment in doc.segments:
             text = segment.text.strip()
+            if not text:
+                continue
+
             unit_match = UNIT_RE.search(text)
-            if unit_match:
-                current_unit = " ".join(unit_match.group(0).split()).strip(" .,:;—–-")
-                if len(current_unit) > 4 and current_unit.lower() not in {u.lower() for u in units}:
-                    units.append(current_unit)
-            if len(text) >= 25 and any(marker in text.lower() for marker in FUNCTION_MARKERS):
-                records.append(FunctionRecord(current_unit, text, segment.source))
+
+            # Название подразделения принимаем только из короткой строки.
+            # Это защищает от ложного распознавания обычного длинного абзаца,
+            # где слова "департамент", "управление", "отдел" просто упоминаются.
+            if unit_match and len(text) <= 160:
+                candidate = " ".join(unit_match.group(0).split())
+                candidate = candidate.strip(" .,:;—-")
+
+                if candidate:
+                    current_unit = candidate
+                    if current_unit not in units:
+                        units.append(current_unit)
+
+            # Функции извлекаем независимо от того,
+            # встретилось ли название подразделения в этом абзаце.
+            for chunk in re.split(r"\n+|(?<=[:;])\s+", text):
+                clean = " ".join(chunk.split()).strip()
+
+                if len(clean) < 25:
+                    continue
+
+                if any(marker in clean.lower() for marker in FUNCTION_MARKERS):
+                    records.append(
+                        FunctionRecord(
+                            unit=current_unit,
+                            text=clean,
+                            source=segment.source,
+                        )
+                    )
+
     return units, records
 
 
