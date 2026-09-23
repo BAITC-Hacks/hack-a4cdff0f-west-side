@@ -18,6 +18,11 @@ with left:
 with right:
     after_files = st.file_uploader("Документы «После»", type=["docx", "pdf", "xlsx", "xlsm"], accept_multiple_files=True, key="after")
 
+st.info(
+    "Загрузите документы в обе группы: исходную версию в «До», "
+    "а обновлённую версию в «После». Поддерживаются DOCX, PDF, XLSX и XLSM."
+)
+
 if st.button("Запустить анализ", type="primary", disabled=not (before_files and after_files)):
     try:
         before_docs = [extract_document(f.name, f.getvalue()) for f in before_files]
@@ -84,6 +89,12 @@ if result:
     with tabs[7]:
         st.markdown(to_markdown(result))
         st.download_button("Скачать заключение (Markdown)", to_markdown(result), file_name="analytical_conclusion.md", mime="text/markdown")
+
+st.caption(
+    "Результаты автоматического анализа носят рекомендательный характер "
+    "и требуют экспертной проверки."
+)
+
 
 st.divider()
 st.caption("Поддерживаются .docx, .pdf, .xlsx и .xlsm. Старые форматы .doc/.xls сначала сохраните в современном формате. Прототип использует локальные правила сопоставления без отправки документов во внешние AI-сервисы.")
