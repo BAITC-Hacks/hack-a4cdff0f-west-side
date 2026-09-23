@@ -1,5 +1,6 @@
 from .models import AnalysisResult
 
+
 def to_markdown(result: AnalysisResult) -> str:
     lines = [
         "# Аналитическое заключение",
@@ -19,17 +20,23 @@ def to_markdown(result: AnalysisResult) -> str:
         "",
     ]
 
-    for finding in result.findings:
+    for number, finding in enumerate(result.findings, start=1):
         lines += [
-            f"### {finding.title}",
+            f"### {number}. {finding.title}",
+            "",
             finding.details,
             "",
             "Источники:",
         ]
-        lines += [
-            f"- **{source.label}**: «{source.excerpt}»"
-            for source in finding.sources
-        ]
+
+        if finding.sources:
+            lines += [
+                f"- **{source.label}**: «{source.excerpt}»"
+                for source in finding.sources
+            ]
+        else:
+            lines.append("- Источники не указаны.")
+
         lines.append("")
 
-    return "\n".join(lines)s
+    return "\n".join(lines)
