@@ -67,3 +67,38 @@ def test_demo_upload_to_analysis_to_cited_report():
     assert "before.docx — абзац" in report
     assert "after.xlsx — лист" in report
     assert "Источники:" in report
+
+
+def test_empty_after_rejected(): before = [doc("before", "строка 1", "Функция отдела")]
+try:
+    analyze(before, [])
+except ValueError as exc:
+    assert "Загрузите документы" in str(exc)
+else:
+    raise AssertionError("empty after side should fail")
+
+
+def test_both_sides_empty_rejected():
+    try:
+        analyze([], [])
+    except ValueError as exc:
+        assert "Загрузите документы" in str(exc)
+    else:
+        raise AssertionError("empty documents should fail")
+        
+def test_finding_source_contains_document_and_location(): before = [ doc( "before.docx", "абзац 3", "Отдел закупок обеспечивает проведение закупочных процедур." ) ]
+after = [
+    doc(
+        "after.docx",
+        "абзац 5",
+        "Отдел снабжения обеспечивает проведение закупочных процедур."
+    )
+]
+
+result = analyze(before, after)
+
+for finding in result.findings:
+    for source in finding.sources:
+        assert source.document
+        assert source.location
+        assert source.excerpt
