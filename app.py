@@ -90,5 +90,11 @@ if result:
         st.markdown(to_markdown(result))
         st.download_button("Скачать заключение (Markdown)", to_markdown(result), file_name="analytical_conclusion.md", mime="text/markdown")
 
+st.caption(
+    "Результаты автоматического анализа носят рекомендательный характер "
+    "и требуют экспертной проверки."
+)
+
+
 st.divider()
 st.caption("Поддерживаются .docx, .pdf, .xlsx и .xlsm. Старые форматы .doc/.xls сначала сохраните в современном формате. Прототип использует локальные правила сопоставления без отправки документов во внешние AI-сервисы.")
