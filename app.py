@@ -31,7 +31,48 @@ result = st.session_state.get("analysis_result")
 if result:
     st.info(result.conclusion)
     findings = result.findings
-    categories = ["Изменения", "Сопоставление функций", "Потенциальные потери", "Дублирование", "Пересечения", "Конфликты интересов", "Подразделения", "Заключение"]
+    
+    # Приоритет экспертной проверки
+st.subheader("🎯 Приоритет экспертной проверки")
+
+risk_weights = {
+    "Потенциальные потери": 3,
+    "Конфликты интересов": 3,
+    "Дублирование": 2,
+    "Пересечения": 2,
+    "Изменения": 1,
+}
+
+department_scores = {}
+
+for finding in findings:
+    weight = risk_weights.get(finding.category, 1)
+
+    for source in finding.sources:
+        department = source.location or "Подразделение не определено"
+        department_scores[department] = (
+            department_scores.get(department, 0) + weight
+        )
+
+if department_scores:
+    top_departments = sorted(
+        department_scores.items(),
+        key=lambda item: item[1],
+        reverse=True,
+    )[:5]
+
+    st.caption(
+        "Приоритет областей для экспертной проверки. "
+        "Баллы рассчитаны по типам найденных наблюдений "
+        "и не являются вероятностью риска."
+    )
+
+    for position, (department, score) in enumerate(
+        top_departments, start=1
+    ):
+        st.markdown(
+            f"**{position}. {department} — {score} балл(ов)**"
+        )categories = ["Изменения", "Сопоставление функций", "Потенциальные потери", "Дублирование", "Пересечения", "Конфликты интересов", "Подразделения", "Заключение"]
     tabs = st.tabs(categories)
     with tabs[0]:
         st.subheader("Найденные изменения")
