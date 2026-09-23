@@ -1,6 +1,5 @@
 from .models import AnalysisResult
 
-
 def to_markdown(result: AnalysisResult) -> str:
     lines = [
         "# Аналитическое заключение",
@@ -9,6 +8,12 @@ def to_markdown(result: AnalysisResult) -> str:
         "",
         "> Результаты автоматического анализа носят рекомендательный характер "
         "и требуют экспертной проверки.",
+        "",
+        "## Сводка",
+        "",
+        f"- Найдено наблюдений: **{len(result.findings)}**",
+        f"- Функций в версии «До»: **{len(result.functions_before)}**",
+        f"- Функций в версии «После»: **{len(result.functions_after)}**",
         "",
         "## Наблюдения",
         "",
@@ -27,4 +32,4 @@ def to_markdown(result: AnalysisResult) -> str:
         ]
         lines.append("")
 
-    return "\n".join(lines)
+    return "\n".join(lines)s
