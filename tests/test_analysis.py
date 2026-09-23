@@ -76,3 +76,12 @@ except ValueError as exc:
     assert "Загрузите документы" in str(exc)
 else:
     raise AssertionError("empty after side should fail")
+
+
+def test_both_sides_empty_rejected():
+    try:
+        analyze([], [])
+    except ValueError as exc:
+        assert "Загрузите документы" in str(exc)
+    else:
+        raise AssertionError("empty documents should fail")
