@@ -67,3 +67,12 @@ def test_demo_upload_to_analysis_to_cited_report():
     assert "before.docx — абзац" in report
     assert "after.xlsx — лист" in report
     assert "Источники:" in report
+
+
+def test_empty_after_rejected(): before = [doc("before", "строка 1", "Функция отдела")]
+try:
+    analyze(before, [])
+except ValueError as exc:
+    assert "Загрузите документы" in str(exc)
+else:
+    raise AssertionError("empty after side should fail")
